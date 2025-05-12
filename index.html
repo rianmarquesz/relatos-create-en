@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Prompt Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 12px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      height: 200px;
+      resize: vertical;
+    }
+
+    .prompt-box {
+      margin-bottom: 40px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1, h2 {
+      margin-top: 0;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 15px;
+      }
+
+      textarea {
+        height: 150px;
+      }
+
+      button {
+        font-size: 0.95rem;
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Prompt Generator</h1>
+
+  <div class="prompt-box">
+    <label for="tema">Enter a theme:</label>
+    <input type="text" id="tema" placeholder="e.g. family betrayal, hidden past..." />
+    <button onclick="gerarPrompt()">Generate Prompt 1</button>
+    <textarea id="promptText" readonly></textarea>
+    <button onclick="copiarTexto('promptText')">Copy Prompt 1</button>
+  </div>
+
+  <div class="prompt-box">
+    <h2>Prompt 02</h2>
+    <textarea id="prompt2" readonly>Loading...</textarea>
+    <button onclick="copiarTexto('prompt2')">Copy Prompt 2</button>
+  </div>
+
+  <div class="prompt-box">
+    <h2>Prompt 03 – Continuation</h2>
+    <textarea id="prompt3" readonly>Loading...</textarea>
+    <button onclick="copiarTexto('prompt3')">Copy Prompt 3</button>
+  </div>
+
+  <div class="prompt-box">
+    <h2>Prompt FINAL</h2>
+    <textarea id="promptFinal" readonly>Loading...</textarea>
+    <button onclick="copiarTexto('promptFinal')">Copy Final Prompt</button>
+  </div>
+
+  <script>
+    let promptBase = "";
+
+    async function gerarPrompt() {
+      const tema = document.getElementById("tema").value.trim();
+      if (!tema) {
+        alert("Please enter a theme.");
+        return;
+      }
+
+      if (!promptBase) {
+        const res = await fetch('prompt1.txt');
+        promptBase = await res.text();
+      }
+
+      const finalPrompt = promptBase.replace("The theme is:", `The theme is: ${tema}`);
+      document.getElementById("promptText").value = finalPrompt;
+    }
+
+    async function copiarTexto(id) {
+      const text = document.getElementById(id).value;
+      try {
+        await navigator.clipboard.writeText(text);
+        alert("Prompt copied!");
+      } catch (err) {
+        alert("Failed to copy text.");
+      }
+    }
+
+    async function carregarOutrosPrompts() {
+      const res = await fetch('prompts.txt');
+      const fullText = await res.text();
+      const parts = fullText.split(/---+/);
+
+      if (parts.length >= 3) {
+        document.getElementById("prompt2").value = parts[0].trim();
+        document.getElementById("prompt3").value = parts[1].trim();
+        document.getElementById("promptFinal").value = parts[2].trim();
+      } else {
+        document.getElementById("prompt2").value = "Could not load Prompt 2.";
+        document.getElementById("prompt3").value = "Could not load Prompt 3.";
+        document.getElementById("promptFinal").value = "Could not load Final Prompt.";
+      }
+    }
+
+    carregarOutrosPrompts();
+  </script>
+</body>
+</html>
